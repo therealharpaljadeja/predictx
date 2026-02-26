@@ -1,0 +1,24 @@
+node_modules/
+.env
+.env.local
+
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/lib/
+
+# Next.js
+web/.next/
+web/out/
+
+# Build artifacts
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

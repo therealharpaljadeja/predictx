@@ -1,0 +1,8 @@
+{
+  "schedule": "0 */15 * * * *",
+  "marketRegistryAddress": "0x3A428C10D19a41F584E8Ba5F34544D166cbf9131",
+  "marketResolutionAddress": "0x0D89d2E889738734584C7A65b03f3f527e9F9094",
+  "chainName": "ethereum-testnet-sepolia-base-1",
+  "gasLimit": "500000",
+  "apiBaseUrl": "https://api.x.com/2/"
+}

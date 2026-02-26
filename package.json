@@ -1,0 +1,10 @@
+{
+  "name": "predictx",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "test:contracts": "cd contracts && forge test",
+    "deploy:contracts": "cd contracts && forge script script/Deploy.s.sol --rpc-url base_sepolia --broadcast"
+  }
+}
