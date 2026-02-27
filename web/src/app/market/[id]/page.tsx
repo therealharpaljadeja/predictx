@@ -88,6 +88,13 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
+      {/* Chart — full width at top */}
+      <MetricChart
+        marketId={marketId}
+        targetValue={market.targetValue}
+        metricLabel={typeLabel}
+      />
+
       <div className="grid gap-6 lg:grid-cols-5">
         {/* Left: Market Stats */}
         <div className="lg:col-span-3 space-y-6">
@@ -132,12 +139,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
             </CardContent>
           </Card>
 
-          <MetricChart
-            marketId={marketId}
-            targetValue={market.targetValue}
-            metricLabel={typeLabel}
-          />
-
           {/* Resolution result */}
           {market.status === MarketStatus.Resolved && resolution && resolution.resolvedAt > 0 && (() => {
             const verification = getVerificationUrl(market.endpointPath);
@@ -175,6 +176,15 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
               </Card>
             );
           })()}
+        </div>
+
+        {/* Right: Bet Panel / Claim + User Position */}
+        <div className="lg:col-span-2 space-y-6">
+          {(market.status === MarketStatus.Resolved || market.status === MarketStatus.Cancelled) ? (
+            <ClaimWinnings marketId={marketId} status={market.status} />
+          ) : (
+            <BetPanel marketId={marketId} isOpen={isOpen} />
+          )}
 
           {/* User position */}
           {position && (position.yesAmount > 0n || position.noAmount > 0n) && (
@@ -199,15 +209,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
                 </div>
               </CardContent>
             </Card>
-          )}
-        </div>
-
-        {/* Right: Bet Panel / Claim */}
-        <div className="lg:col-span-2 space-y-6">
-          {(market.status === MarketStatus.Resolved || market.status === MarketStatus.Cancelled) ? (
-            <ClaimWinnings marketId={marketId} status={market.status} />
-          ) : (
-            <BetPanel marketId={marketId} isOpen={isOpen} />
           )}
         </div>
       </div>
