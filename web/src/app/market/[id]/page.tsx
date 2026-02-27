@@ -12,6 +12,7 @@ import { ClaimWinnings } from "@/components/market/claim-winnings";
 import { OddsBar } from "@/components/market/odds-bar";
 import { useMarket } from "@/hooks/use-markets";
 import { MetricChart } from "@/components/market/metric-chart";
+import { MarketCountdown } from "@/components/market/market-countdown";
 import { usePool, usePosition } from "@/hooks/use-pool";
 import { useResolution } from "@/hooks/use-resolution";
 import { MarketStatus } from "@/types/market";
@@ -87,6 +88,13 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           </Badge>
         </div>
       </div>
+
+      {market.status !== MarketStatus.Resolved && market.status !== MarketStatus.Cancelled && (
+        <MarketCountdown
+          timestamp={market.resolutionDate}
+          label="Market resolves in"
+        />
+      )}
 
       {/* Chart — full width at top */}
       <MetricChart
