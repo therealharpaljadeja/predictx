@@ -45,6 +45,11 @@ export function MetricChart({ marketId, targetValue, metricLabel }: MetricChartP
   const latest = snapshots[snapshots.length - 1].value;
   const progressPct = target > 0 ? ((latest / target) * 100).toFixed(1) : "—";
 
+  const dataMin = Math.min(...snapshots.map((s) => s.value));
+  const dataMax = Math.max(...snapshots.map((s) => s.value));
+  const yMin = Math.min(dataMin, target) * 0.95;
+  const yMax = Math.max(dataMax, target) * 1.05;
+
   return (
     <Card>
       <CardHeader>
@@ -69,6 +74,7 @@ export function MetricChart({ marketId, targetValue, metricLabel }: MetricChartP
                 tickLine={false}
               />
               <YAxis
+                domain={[yMin, yMax]}
                 tickFormatter={(v: number) => formatCompactNumber(v)}
                 tick={{ fontSize: 10, fontFamily: "monospace", fill: "#666666" }}
                 stroke="#1C1C1C"
@@ -78,12 +84,13 @@ export function MetricChart({ marketId, targetValue, metricLabel }: MetricChartP
               <Tooltip content={<CustomTooltip />} />
               <ReferenceLine
                 y={target}
-                stroke="#666666"
-                strokeDasharray="4 4"
+                stroke="#22c55e"
+                strokeDasharray="6 3"
+                strokeWidth={1.5}
                 label={{
                   value: "TARGET",
                   position: "right",
-                  fill: "#666666",
+                  fill: "#22c55e",
                   fontSize: 9,
                   fontFamily: "monospace",
                 }}
