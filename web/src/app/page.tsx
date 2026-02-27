@@ -13,18 +13,23 @@ export default function HomePage() {
   const { data: markets, isLoading } = useMarkets();
   const [filter, setFilter] = useState<Filter>("all");
 
-  const filtered = markets.filter((m) => {
-    if (filter === "active") return m.status === MarketStatus.Open;
-    if (filter === "resolved") return m.status === MarketStatus.Resolved;
-    return true;
-  });
+  const filtered = markets
+    .filter((m) => {
+      if (filter === "active") return m.status === MarketStatus.Open;
+      if (filter === "resolved") return m.status === MarketStatus.Resolved;
+      return true;
+    })
+    .sort((a, b) => {
+      if (a.status !== b.status) return a.status === MarketStatus.Open ? -1 : 1;
+      return b.id - a.id;
+    });
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Prediction Markets</h1>
-          <p className="text-muted-foreground">Bet on X/Twitter milestones</p>
+          <h1 className="text-xl font-bold tracking-tight">Prediction Markets</h1>
+          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Bet on X/Twitter milestones</p>
         </div>
         <Tabs value={filter} onValueChange={(v) => setFilter(v as Filter)}>
           <TabsList>
@@ -37,16 +42,18 @@ export default function HomePage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
+        <div className="text-center py-20 text-muted-foreground font-mono text-xs uppercase tracking-widest">
           No markets found
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((market) => (
-            <MarketCard key={market.id} market={market} />
+        <div className="grid gap-px bg-border md:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((market, i) => (
+            <div key={market.id} className="animate-card-enter" style={{ animationDelay: `${i * 60}ms` }}>
+              <MarketCard market={market} />
+            </div>
           ))}
         </div>
       )}

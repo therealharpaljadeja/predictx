@@ -5,11 +5,14 @@ import { MarketRegistryABI } from "@/lib/abis";
 import { CONTRACTS } from "@/lib/contracts";
 import { Market, MarketStatus, ComparisonOperator } from "@/types/market";
 
+const POLL_INTERVAL = 5_000;
+
 export function useMarketCount() {
   return useReadContract({
     address: CONTRACTS.MarketRegistry,
     abi: MarketRegistryABI,
     functionName: "nextMarketId",
+    query: { refetchInterval: POLL_INTERVAL },
   });
 }
 
@@ -19,6 +22,7 @@ export function useMarket(id: number) {
     abi: MarketRegistryABI,
     functionName: "getMarket",
     args: [BigInt(id)],
+    query: { refetchInterval: POLL_INTERVAL },
   });
 
   const market: Market | undefined = data
@@ -51,7 +55,7 @@ export function useMarkets() {
     args: [BigInt(i)] as const,
   }));
 
-  const { data, ...rest } = useReadContracts({ contracts });
+  const { data, ...rest } = useReadContracts({ contracts, query: { refetchInterval: POLL_INTERVAL } });
 
   const markets: Market[] =
     data

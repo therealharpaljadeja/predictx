@@ -58,6 +58,18 @@ export function getMarketTypeLabel(endpointPath: string, jsonPath: string): stri
   return match?.label ?? "Unknown";
 }
 
+export function getVerificationUrl(endpointPath: string): { url: string; label: string } | null {
+  const usernameMatch = endpointPath.match(/users\/by\/username\/([^?]+)/);
+  if (usernameMatch) {
+    return { url: `https://x.com/${usernameMatch[1]}`, label: `@${usernameMatch[1]}` };
+  }
+  const tweetMatch = endpointPath.match(/tweets\/(\d+)/);
+  if (tweetMatch) {
+    return { url: `https://x.com/i/status/${tweetMatch[1]}`, label: `Tweet ${tweetMatch[1]}` };
+  }
+  return null;
+}
+
 export function formatOperator(op: ComparisonOperator): string {
   switch (op) {
     case ComparisonOperator.GreaterThanOrEqual: return ">=";

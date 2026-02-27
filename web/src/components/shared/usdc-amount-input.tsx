@@ -18,10 +18,10 @@ export function USDCAmountInput({ value, onChange, label = "Amount (USDC)", bala
         {balance !== undefined && (
           <button
             type="button"
-            className="text-xs text-muted-foreground hover:text-foreground"
+            className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors duration-150"
             onClick={() => onChange((Number(balance) / 1e6).toString())}
           >
-            Balance: {(Number(balance) / 1e6).toFixed(2)} USDC
+            Bal: {(Number(balance) / 1e6).toFixed(2)}
           </button>
         )}
       </div>

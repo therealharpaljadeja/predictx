@@ -16845,7 +16845,6 @@ var onCronTrigger = (runtime2) => {
         }
       }).result();
       const bodyText = new TextDecoder().decode(resp.body);
-      nodeRuntime.log("API response for market #" + i2 + ": " + bodyText);
       const body = JSON.parse(bodyText);
       return resolveJsonPath(body, market.jsonPath);
     };

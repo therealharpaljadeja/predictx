@@ -8,11 +8,11 @@ export function ConnectWalletPrompt({ message = "Connect your wallet to continue
   const { open } = useAppKit();
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 py-12">
-      <Wallet className="h-12 w-12 text-muted-foreground" />
-      <p className="text-muted-foreground">{message}</p>
+    <div className="flex flex-col items-center justify-center gap-4 py-12 border border-border">
+      <Wallet className="h-8 w-8 text-muted-foreground" />
+      <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest">{message}</p>
       <Button onClick={() => open()} className="gap-2">
-        <Wallet className="h-4 w-4" />
+        <Wallet className="h-3.5 w-3.5" />
         Connect Wallet
       </Button>
     </div>

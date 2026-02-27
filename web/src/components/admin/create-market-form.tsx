@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,7 +25,33 @@ export function CreateMarketForm() {
   const [bettingDeadline, setBettingDeadline] = useState("");
   const [resolutionDate, setResolutionDate] = useState("");
 
-  const { createMarket, isPending, isConfirming, isSuccess } = useCreateMarket();
+  const { createMarket, isPending, isConfirming, isSuccess, error, reset } = useCreateMarket();
+
+  const resetForm = useCallback(() => {
+    setMarketTypeId(MARKET_TYPES[0].id);
+    setParam("");
+    setDescription("");
+    setTargetValue("");
+    setOperator("0");
+    setBettingDeadline("");
+    setResolutionDate("");
+  }, []);
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("Market created successfully");
+      resetForm();
+      const timer = setTimeout(() => reset(), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, resetForm, reset]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error("Failed to create market", { description: error.message.split("\n")[0] });
+      reset();
+    }
+  }, [error, reset]);
 
   const selectedType = MARKET_TYPES.find((t) => t.id === marketTypeId) ?? MARKET_TYPES[0];
 
@@ -49,15 +76,9 @@ export function CreateMarketForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Create Market</CardTitle>
+        <CardTitle className="text-sm font-mono uppercase tracking-widest">Create Market</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {isSuccess && (
-          <div className="rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-400">
-            Market created successfully!
-          </div>
-        )}
-
         <div className="space-y-2">
           <Label>Market Type</Label>
           <Select value={marketTypeId} onValueChange={setMarketTypeId}>

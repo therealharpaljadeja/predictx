@@ -10,4 +10,6 @@ export const CONTRACTS = {
   USDC: "0x036CbD53842c5426634e7929541eC2318f3dCF7e" as `0x${string}`,
 } as const;
 
+export const ADMIN_WALLET = "0xf658542DBacca2706F391F134c673923eC11af49" as `0x${string}`;
+
 export const USDC_DECIMALS = 6;

@@ -11,11 +11,14 @@ import { CountdownTimer } from "@/components/market/countdown-timer";
 import { ClaimWinnings } from "@/components/market/claim-winnings";
 import { OddsBar } from "@/components/market/odds-bar";
 import { useMarket } from "@/hooks/use-markets";
+import { MetricChart } from "@/components/market/metric-chart";
 import { usePool, usePosition } from "@/hooks/use-pool";
 import { useResolution } from "@/hooks/use-resolution";
 import { MarketStatus } from "@/types/market";
-import { formatCompactNumber, formatUSDC, calculateOdds, getMarketTypeLabel, formatOperator } from "@/lib/utils";
-import { Target, Calendar, Clock, Loader2, BarChart3 } from "lucide-react";
+import { useProfileImage } from "@/hooks/use-profile-image";
+import { formatCompactNumber, formatUSDC, calculateOdds, getMarketTypeLabel, formatOperator, getVerificationUrl } from "@/lib/utils";
+import { Target, Calendar, Clock, Loader2, User, ExternalLink } from "lucide-react";
+import Image from "next/image";
 
 export default function MarketDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -26,17 +29,18 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const { data: pool } = usePool(marketId);
   const { data: position } = usePosition(marketId, address);
   const { data: resolution } = useResolution(marketId);
+  const { data: profile } = useProfileImage(market?.endpointPath ?? "");
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (!market || market.createdAt === 0) {
-    return <div className="text-center py-20 text-muted-foreground">Market not found</div>;
+    return <div className="text-center py-20 text-muted-foreground font-mono text-xs uppercase tracking-widest">Market not found</div>;
   }
 
   const totalYes = pool?.totalYesAmount ?? 0n;
@@ -48,14 +52,26 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       {/* Market Header */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/10 text-indigo-400">
-            <BarChart3 className="h-6 w-6" />
+      <div className="space-y-2">
+        <div className="flex items-center gap-4">
+          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-muted">
+            {profile?.avatarUrl ? (
+              <Image
+                src={profile.avatarUrl}
+                alt={profile.username ?? ""}
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <User className="h-6 w-6 text-muted-foreground" />
+              </div>
+            )}
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{typeLabel}</h1>
-            <p className="text-muted-foreground">{market.description}</p>
+            <h1 className="text-xl font-bold tracking-tight">{market.description}</h1>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{typeLabel}</p>
           </div>
           <Badge
             className="ml-auto"
@@ -67,7 +83,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
                 : "secondary"
             }
           >
-            {MarketStatus[market.status]}
+            {MarketStatus[market.status].toUpperCase()}
           </Badge>
         </div>
       </div>
@@ -77,38 +93,38 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
         <div className="lg:col-span-3 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Market Details</CardTitle>
+              <CardTitle className="text-sm font-mono uppercase tracking-widest">Market Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Target className="h-3.5 w-3.5" /> Target
+                  <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                    <Target className="h-3 w-3" /> Target
                   </div>
-                  <p className="text-lg font-semibold">{formatOperator(market.operator)} {formatCompactNumber(market.targetValue)}</p>
+                  <p className="text-lg font-mono font-bold">{formatOperator(market.operator)} {formatCompactNumber(market.targetValue)}</p>
                 </div>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5" /> Betting Deadline
+                  <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                    <Clock className="h-3 w-3" /> Deadline
                   </div>
                   <CountdownTimer timestamp={market.bettingDeadline} />
                 </div>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Calendar className="h-3.5 w-3.5" /> Resolution Date
+                  <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                    <Calendar className="h-3 w-3" /> Resolution
                   </div>
-                  <p className="text-sm">{new Date(market.resolutionDate * 1000).toLocaleDateString()}</p>
+                  <p className="text-[13px] font-mono">{new Date(market.resolutionDate * 1000).toLocaleDateString()}</p>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-xs text-muted-foreground">Total Pool</div>
-                  <p className="text-lg font-semibold">${formatUSDC(totalYes + totalNo)}</p>
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Total Pool</div>
+                  <p className="text-lg font-mono font-bold">${formatUSDC(totalYes + totalNo)}</p>
                 </div>
               </div>
 
               <Separator />
 
               <div className="space-y-2">
-                <p className="text-sm font-medium">Current Odds</p>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Current Odds</p>
                 <OddsBar yesPercent={odds.yes} noPercent={odds.no} />
               </div>
 
@@ -116,45 +132,68 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
             </CardContent>
           </Card>
 
+          <MetricChart
+            marketId={marketId}
+            targetValue={market.targetValue}
+            metricLabel={typeLabel}
+          />
+
           {/* Resolution result */}
-          {market.status === MarketStatus.Resolved && resolution && resolution.resolvedAt > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Resolution</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Actual Value</span>
-                  <span className="font-semibold">{formatCompactNumber(resolution.actualValue)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Target Met?</span>
-                  <Badge variant={resolution.targetMet ? "default" : "destructive"}>
-                    {resolution.targetMet ? "YES" : "NO"}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {market.status === MarketStatus.Resolved && resolution && resolution.resolvedAt > 0 && (() => {
+            const verification = getVerificationUrl(market.endpointPath);
+            return (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm font-mono uppercase tracking-widest">Resolution</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex justify-between text-[13px] font-mono">
+                    <span className="text-muted-foreground">Actual Value</span>
+                    <span className="font-bold">{formatCompactNumber(resolution.actualValue)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[13px] font-mono text-muted-foreground">Target Met?</span>
+                    <Badge variant={resolution.targetMet ? "default" : "secondary"}>
+                      {resolution.targetMet ? "YES" : "NO"}
+                    </Badge>
+                  </div>
+                  {verification && (
+                    <div className="flex justify-between items-center pt-1">
+                      <span className="text-[13px] font-mono text-muted-foreground">Verify</span>
+                      <a
+                        href={verification.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-[13px] font-mono text-foreground underline underline-offset-4 hover:text-muted-foreground transition-colors"
+                      >
+                        {verification.label}
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })()}
 
           {/* User position */}
           {position && (position.yesAmount > 0n || position.noAmount > 0n) && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Your Position</CardTitle>
+                <CardTitle className="text-sm font-mono uppercase tracking-widest">Your Position</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex gap-6">
                   {position.yesAmount > 0n && (
                     <div>
-                      <p className="text-xs text-muted-foreground">YES</p>
-                      <p className="text-lg font-semibold text-emerald-400">${formatUSDC(position.yesAmount)}</p>
+                      <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">YES</p>
+                      <p className="text-lg font-mono font-bold">${formatUSDC(position.yesAmount)}</p>
                     </div>
                   )}
                   {position.noAmount > 0n && (
                     <div>
-                      <p className="text-xs text-muted-foreground">NO</p>
-                      <p className="text-lg font-semibold text-red-400">${formatUSDC(position.noAmount)}</p>
+                      <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">NO</p>
+                      <p className="text-lg font-mono font-bold text-muted-foreground">${formatUSDC(position.noAmount)}</p>
                     </div>
                   )}
                 </div>

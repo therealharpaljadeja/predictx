@@ -3,11 +3,8 @@
 import { useAccount, useReadContracts } from "wagmi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ConnectWalletPrompt } from "@/components/shared/connect-wallet-prompt";
-import { TransactionButton } from "@/components/shared/transaction-button";
 import { useMarkets } from "@/hooks/use-markets";
-import { useClaimWinnings } from "@/hooks/use-claim-winnings";
 import { BettingPoolABI, MarketResolutionABI } from "@/lib/abis";
 import { CONTRACTS } from "@/lib/contracts";
 import { MarketStatus } from "@/types/market";
@@ -31,7 +28,18 @@ export function UserBetsTable() {
     query: { enabled: isConnected && markets.length > 0 },
   });
 
-  const { claim, isPending, isConfirming } = useClaimWinnings();
+  // Read resolutions for resolved markets
+  const resolutionContracts = markets.map((m) => ({
+    address: CONTRACTS.MarketResolution,
+    abi: MarketResolutionABI,
+    functionName: "getResolution" as const,
+    args: [BigInt(m.id)] as const,
+  }));
+
+  const { data: resolutions } = useReadContracts({
+    contracts: resolutionContracts,
+    query: { enabled: markets.length > 0 },
+  });
 
   if (!isConnected) {
     return <ConnectWalletPrompt message="Connect your wallet to view your bets" />;
@@ -44,18 +52,23 @@ export function UserBetsTable() {
       if (pos?.status !== "success" || !pos.result) return null;
       const { yesAmount, noAmount, claimed, refunded } = pos.result;
       if (yesAmount === 0n && noAmount === 0n) return null;
-      return { market, position: { yesAmount, noAmount, claimed, refunded } };
+
+      const res = resolutions?.[i];
+      const resolution = res?.status === "success" && res.result ? res.result : null;
+
+      return { market, position: { yesAmount, noAmount, claimed, refunded }, resolution };
     })
     .filter(Boolean) as Array<{
     market: (typeof markets)[0];
     position: { yesAmount: bigint; noAmount: bigint; claimed: boolean; refunded: boolean };
+    resolution: { targetMet: boolean; resolvedAt: bigint } | null;
   }>;
 
   if (userBets.length === 0) {
     return (
       <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
-          No bets placed yet. <Link href="/" className="text-indigo-400 hover:underline">Browse markets</Link>
+        <CardContent className="py-8 text-center text-muted-foreground font-mono text-xs">
+          No bets placed yet. <Link href="/" className="text-foreground hover:underline">Browse markets</Link>
         </CardContent>
       </Card>
     );
@@ -64,52 +77,74 @@ export function UserBetsTable() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Your Bets</CardTitle>
+        <CardTitle className="text-sm font-mono uppercase tracking-widest">Your Bets</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          {userBets.map(({ market, position }) => {
+        <div className="space-y-0 divide-y divide-border">
+          {userBets.map(({ market, position, resolution }, i) => {
             const totalBet = position.yesAmount + position.noAmount;
+
+            // Determine win/loss for resolved markets
+            let isWin = false;
+            let isLoss = false;
+            if (market.status === MarketStatus.Resolved && resolution && Number(resolution.resolvedAt) > 0) {
+              const targetMet = resolution.targetMet;
+              const userWinningBet = targetMet ? position.yesAmount : position.noAmount;
+              isWin = userWinningBet > 0n;
+              isLoss = userWinningBet === 0n;
+            }
+
             const statusLabel =
               market.status === MarketStatus.Resolved
                 ? position.claimed
-                  ? "Claimed"
-                  : "Claimable"
+                  ? "CLAIMED"
+                  : isLoss
+                  ? "LOST"
+                  : "CLAIMABLE"
                 : market.status === MarketStatus.Cancelled
                 ? position.refunded
-                  ? "Refunded"
-                  : "Refundable"
-                : "Active";
+                  ? "REFUNDED"
+                  : "REFUNDABLE"
+                : "ACTIVE";
+
+            const badgeVariant =
+              statusLabel === "ACTIVE"
+                ? "default" as const
+                : statusLabel === "CLAIMABLE" || statusLabel === "REFUNDABLE"
+                ? "outline" as const
+                : statusLabel === "LOST"
+                ? "destructive" as const
+                : "secondary" as const;
 
             return (
               <Link
                 key={market.id}
                 href={`/market/${market.id}`}
-                className="flex items-center justify-between rounded-lg border p-3 hover:border-indigo-500/50 transition-colors"
+                className="flex items-center justify-between border-border p-3 hover:bg-[#141414] transition-colors duration-150 block animate-card-enter"
+                style={{ animationDelay: `${i * 50}ms` }}
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">{getMarketTypeLabel(market.endpointPath, market.jsonPath)}</span>
-                    <Badge variant="outline" className="text-xs">#{market.id}</Badge>
+                    <span className="font-medium text-sm">{market.description}</span>
+                    <Badge variant="outline" className="text-[10px]">#{market.id}</Badge>
                   </div>
-                  <div className="flex gap-3 text-xs text-muted-foreground">
+                  <div className="flex gap-3 text-[11px] font-mono text-muted-foreground">
                     {position.yesAmount > 0n && (
-                      <span className="text-emerald-400">YES: ${formatUSDC(position.yesAmount)}</span>
+                      <span className={isWin && resolution?.targetMet ? "text-foreground" : ""}>
+                        YES: ${formatUSDC(position.yesAmount)}
+                      </span>
                     )}
                     {position.noAmount > 0n && (
-                      <span className="text-red-400">NO: ${formatUSDC(position.noAmount)}</span>
+                      <span className={isWin && !resolution?.targetMet ? "text-foreground" : ""}>
+                        NO: ${formatUSDC(position.noAmount)}
+                      </span>
                     )}
                     <span>Total: ${formatUSDC(totalBet)}</span>
                   </div>
                 </div>
                 <Badge
-                  variant={
-                    statusLabel === "Active"
-                      ? "default"
-                      : statusLabel === "Claimable" || statusLabel === "Refundable"
-                      ? "outline"
-                      : "secondary"
-                  }
+                  variant={badgeVariant}
+                  className={(statusLabel === "CLAIMABLE" || statusLabel === "REFUNDABLE") ? "animate-badge-glow" : ""}
                 >
                   {statusLabel}
                 </Badge>

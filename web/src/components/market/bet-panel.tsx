@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TransactionButton } from "@/components/shared/transaction-button";
@@ -20,13 +22,14 @@ interface BetPanelProps {
 }
 
 export function BetPanel({ marketId, isOpen }: BetPanelProps) {
+  const queryClient = useQueryClient();
   const { address, isConnected } = useAccount();
   const [side, setSide] = useState<BetSide>(BetSide.Yes);
   const [amount, setAmount] = useState("");
 
   const parsedAmount = parseUSDC(amount);
 
-  const { data: allowance, refetch: refetchAllowance } = useUSDCAllowance(address);
+  const { data: allowance } = useUSDCAllowance(address);
   const { data: balance } = useUSDCBalance(address);
   const { data: payout } = usePotentialPayout(marketId, side, parsedAmount);
 
@@ -37,6 +40,7 @@ export function BetPanel({ marketId, isOpen }: BetPanelProps) {
     isPending: isApprovePending,
     isConfirming: isApproveConfirming,
     isSuccess: isApproveSuccess,
+    error: approveError,
     reset: resetApprove,
   } = useApproveUSDC();
 
@@ -45,24 +49,42 @@ export function BetPanel({ marketId, isOpen }: BetPanelProps) {
     isPending: isBetPending,
     isConfirming: isBetConfirming,
     isSuccess: isBetSuccess,
+    error: betError,
     reset: resetBet,
   } = usePlaceBet();
 
-  // After approval succeeds, refetch allowance
+  // After approval succeeds, refetch all on-chain data then reset
   useEffect(() => {
     if (isApproveSuccess) {
-      refetchAllowance();
-      resetApprove();
+      toast.success("USDC approved");
+      queryClient.invalidateQueries().then(() => resetApprove());
     }
-  }, [isApproveSuccess, refetchAllowance, resetApprove]);
+  }, [isApproveSuccess, queryClient, resetApprove]);
 
-  // After bet succeeds, reset form
+  // After bet succeeds, reset form and refetch all on-chain data
   useEffect(() => {
     if (isBetSuccess) {
+      toast.success("Bet placed successfully");
       setAmount("");
+      queryClient.invalidateQueries();
       resetBet();
     }
-  }, [isBetSuccess, resetBet]);
+  }, [isBetSuccess, resetBet, queryClient]);
+
+  // Handle errors
+  useEffect(() => {
+    if (approveError) {
+      toast.error("Approval failed", { description: approveError.message.split("\n")[0] });
+      resetApprove();
+    }
+  }, [approveError, resetApprove]);
+
+  useEffect(() => {
+    if (betError) {
+      toast.error("Bet failed", { description: betError.message.split("\n")[0] });
+      resetBet();
+    }
+  }, [betError, resetBet]);
 
   if (!isConnected) {
     return <ConnectWalletPrompt message="Connect your wallet to place a bet" />;
@@ -71,7 +93,7 @@ export function BetPanel({ marketId, isOpen }: BetPanelProps) {
   if (!isOpen) {
     return (
       <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
+        <CardContent className="py-8 text-center text-muted-foreground font-mono text-xs uppercase tracking-widest">
           Betting is closed for this market
         </CardContent>
       </Card>
@@ -81,24 +103,26 @@ export function BetPanel({ marketId, isOpen }: BetPanelProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Place a Bet</CardTitle>
+        <CardTitle className="text-sm font-mono uppercase tracking-widest">Place a Bet</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Side toggle */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-px bg-border">
           <Button
-            variant={side === BetSide.Yes ? "default" : "outline"}
+            variant={side === BetSide.Yes ? "default" : "ghost"}
             className={cn(
-              side === BetSide.Yes && "bg-emerald-600 hover:bg-emerald-700"
+              "font-mono text-xs uppercase tracking-widest transition-all duration-200 ease-out",
+              side === BetSide.Yes && "bg-foreground text-background font-bold"
             )}
             onClick={() => setSide(BetSide.Yes)}
           >
             YES
           </Button>
           <Button
-            variant={side === BetSide.No ? "default" : "outline"}
+            variant={side === BetSide.No ? "default" : "ghost"}
             className={cn(
-              side === BetSide.No && "bg-red-600 hover:bg-red-700"
+              "font-mono text-xs uppercase tracking-widest transition-all duration-200 ease-out",
+              side === BetSide.No && "bg-foreground text-background font-bold"
             )}
             onClick={() => setSide(BetSide.No)}
           >
@@ -111,18 +135,18 @@ export function BetPanel({ marketId, isOpen }: BetPanelProps) {
 
         {/* Potential payout */}
         {payout !== undefined && parsedAmount > 0n && (
-          <div className="rounded-lg bg-muted p-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Potential payout</span>
-              <span className="font-medium text-emerald-400">${formatUSDC(payout)}</span>
+          <div className="border border-border p-3 animate-slide-up">
+            <div className="flex justify-between text-[11px] font-mono">
+              <span className="text-muted-foreground uppercase tracking-widest">Potential payout</span>
+              <span className="text-foreground font-bold">${formatUSDC(payout)}</span>
             </div>
           </div>
         )}
 
         {/* Action button */}
-        {needsApproval ? (
+        {needsApproval && !isApproveSuccess ? (
           <TransactionButton
-            onClick={() => approve(parsedAmount)}
+            onClick={() => approve()}
             isPending={isApprovePending}
             isConfirming={isApproveConfirming}
             disabled={parsedAmount === 0n}

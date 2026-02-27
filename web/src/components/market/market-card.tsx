@@ -1,24 +1,27 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { OddsBar } from "./odds-bar";
 import { CountdownTimer } from "./countdown-timer";
 import { usePool } from "@/hooks/use-pool";
+import { useProfileImage } from "@/hooks/use-profile-image";
 import { Market, MarketStatus } from "@/types/market";
 import { calculateOdds, formatCompactNumber, formatUSDC, getMarketTypeLabel, formatOperator } from "@/lib/utils";
-import { Target, DollarSign, BarChart3 } from "lucide-react";
+import { Target, DollarSign, User } from "lucide-react";
 
 const statusConfig: Record<MarketStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  [MarketStatus.Open]: { label: "Active", variant: "default" },
-  [MarketStatus.Closed]: { label: "Closed", variant: "secondary" },
-  [MarketStatus.Resolved]: { label: "Resolved", variant: "outline" },
-  [MarketStatus.Cancelled]: { label: "Cancelled", variant: "destructive" },
+  [MarketStatus.Open]: { label: "LIVE", variant: "default" },
+  [MarketStatus.Closed]: { label: "CLOSED", variant: "secondary" },
+  [MarketStatus.Resolved]: { label: "RESOLVED", variant: "outline" },
+  [MarketStatus.Cancelled]: { label: "CANCELLED", variant: "destructive" },
 };
 
 export function MarketCard({ market }: { market: Market }) {
   const { data: pool } = usePool(market.id);
+  const { data: profile } = useProfileImage(market.endpointPath);
   const totalYes = pool?.totalYesAmount ?? 0n;
   const totalNo = pool?.totalNoAmount ?? 0n;
   const odds = calculateOdds(totalYes, totalNo);
@@ -28,38 +31,52 @@ export function MarketCard({ market }: { market: Market }) {
 
   return (
     <Link href={`/market/${market.id}`}>
-      <Card className="hover:border-indigo-500/50 transition-colors cursor-pointer h-full">
+      <Card className="cursor-pointer h-full transition-all duration-200 ease-out hover:border-[#333333] hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(255,255,255,0.04)] active:scale-[0.98] active:duration-100">
         <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500/10 text-indigo-400">
-                <BarChart3 className="h-5 w-5" />
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted">
+                {profile?.avatarUrl ? (
+                  <Image
+                    src={profile.avatarUrl}
+                    alt={profile.username ?? ""}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <User className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                )}
               </div>
               <div>
-                <p className="font-semibold">{typeLabel}</p>
-                <p className="text-xs text-muted-foreground line-clamp-1">{market.description}</p>
+                <p className="font-bold text-sm">{market.description}</p>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{typeLabel}</p>
               </div>
             </div>
-            <Badge variant={config.variant}>{config.label}</Badge>
+            <Badge variant={config.variant} className={`shrink-0 ${config.label === "LIVE" ? "animate-status-pulse" : ""}`}>
+              {config.label}
+            </Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-4 text-xs font-mono text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Target className="h-3.5 w-3.5" />
+              <Target className="h-3 w-3" />
               {formatOperator(market.operator)} {formatCompactNumber(market.targetValue)}
             </span>
             <span className="flex items-center gap-1">
-              <DollarSign className="h-3.5 w-3.5" />
-              ${formatUSDC(total)} pool
+              <DollarSign className="h-3 w-3" />
+              ${formatUSDC(total)}
             </span>
           </div>
 
           <OddsBar yesPercent={odds.yes} noPercent={odds.no} />
 
           {market.status === MarketStatus.Open && (
-            <div className="text-xs text-muted-foreground">
-              <CountdownTimer timestamp={market.bettingDeadline} label="Betting closes:" />
+            <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              <CountdownTimer timestamp={market.bettingDeadline} label="Closes:" />
             </div>
           )}
         </CardContent>
