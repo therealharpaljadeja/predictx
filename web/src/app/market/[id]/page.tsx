@@ -128,6 +128,28 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
                 </div>
               </div>
 
+              {(() => {
+                const link = getVerificationUrl(market.endpointPath);
+                if (!link) return null;
+                const isTweet = market.endpointPath.includes("tweets/");
+                return (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                      <ExternalLink className="h-3 w-3" /> Source
+                    </div>
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-[13px] font-mono text-foreground underline underline-offset-4 hover:text-muted-foreground transition-colors"
+                    >
+                      {isTweet ? "View Tweet" : link.label}
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                );
+              })()}
+
               <Separator />
 
               <div className="space-y-2">
