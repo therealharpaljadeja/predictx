@@ -13,6 +13,18 @@ import { useMarketStats } from "@/hooks/use-market-stats";
 import { formatCompactNumber } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+function formatAxisValue(n: number): string {
+  if (n >= 1_000_000) {
+    const m = n / 1_000_000;
+    return m % 1 === 0 ? m.toFixed(0) + "M" : m.toFixed(2) + "M";
+  }
+  if (n >= 1_000) {
+    const k = n / 1_000;
+    return k % 1 === 0 ? k.toFixed(0) + "K" : k.toFixed(1) + "K";
+  }
+  return n.toString();
+}
+
 interface MetricChartProps {
   marketId: number;
   targetValue: bigint;
@@ -75,11 +87,12 @@ export function MetricChart({ marketId, targetValue, metricLabel }: MetricChartP
               />
               <YAxis
                 domain={[yMin, yMax]}
-                tickFormatter={(v: number) => formatCompactNumber(v)}
+                tickCount={5}
+                tickFormatter={formatAxisValue}
                 tick={{ fontSize: 10, fontFamily: "monospace", fill: "#666666" }}
                 stroke="#1C1C1C"
                 tickLine={false}
-                width={50}
+                width={55}
               />
               <Tooltip content={<CustomTooltip />} />
               <ReferenceLine
