@@ -67,6 +67,11 @@ export function getVerificationUrl(endpointPath: string): { url: string; label: 
   if (tweetMatch) {
     return { url: `https://x.com/i/status/${tweetMatch[1]}`, label: `Tweet ${tweetMatch[1]}` };
   }
+  const searchMatch = endpointPath.match(/tweets\/counts\/recent\?query=([^&]+)/);
+  if (searchMatch) {
+    const term = decodeURIComponent(searchMatch[1]);
+    return { url: `https://x.com/search?q=${encodeURIComponent(term)}`, label: `Search: "${term}"` };
+  }
   return null;
 }
 

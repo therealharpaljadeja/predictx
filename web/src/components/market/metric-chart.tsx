@@ -67,9 +67,11 @@ export function MetricChart({ marketId, targetValue, metricLabel }: MetricChartP
         <h2 className="text-sm font-mono uppercase tracking-widest font-semibold">
           {metricLabel} Progression
         </h2>
-        <span className="text-xs font-mono text-muted-foreground">
-          {formatCompactNumber(latest)} / {formatCompactNumber(target)} ({progressPct}%)
-        </span>
+        <div className="text-right font-mono">
+          <span className="text-lg font-bold text-foreground">{formatCompactNumber(latest)}</span>
+          <span className="text-sm text-muted-foreground"> / {formatCompactNumber(target)}</span>
+          <span className="ml-2 text-sm font-bold text-foreground">{progressPct}%</span>
+        </div>
       </div>
       <div className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">

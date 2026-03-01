@@ -43,6 +43,17 @@ export const MARKET_TYPES = [
     targetLabel: "Target Retweets",
     targetPlaceholder: "10000",
   },
+  {
+    id: "x-search-count",
+    label: "Search Post Count",
+    paramLabel: "Search Term",
+    paramPlaceholder: "India",
+    buildEndpointPath: (param: string) =>
+      `tweets/counts/recent?query=${encodeURIComponent(param)}`,
+    jsonPath: "meta.total_tweet_count",
+    targetLabel: "Target Post Count",
+    targetPlaceholder: "10000",
+  },
 ] as const;
 
 export const COMPARISON_OPTIONS = [

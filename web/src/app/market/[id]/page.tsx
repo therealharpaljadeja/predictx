@@ -7,7 +7,7 @@ import { BetPanel } from "@/components/market/bet-panel";
 import { PoolBar } from "@/components/market/pool-bar";
 import { CountdownTimer } from "@/components/market/countdown-timer";
 import { ClaimWinnings } from "@/components/market/claim-winnings";
-import { OddsBar } from "@/components/market/odds-bar";
+import { BetHistory } from "@/components/market/bet-history";
 import { useMarket } from "@/hooks/use-markets";
 import { MetricChart } from "@/components/market/metric-chart";
 import { MarketCountdown } from "@/components/market/market-countdown";
@@ -15,7 +15,8 @@ import { usePool, usePosition } from "@/hooks/use-pool";
 import { useResolution } from "@/hooks/use-resolution";
 import { MarketStatus } from "@/types/market";
 import { useProfileImage } from "@/hooks/use-profile-image";
-import { formatCompactNumber, formatUSDC, calculateOdds, getMarketTypeLabel, formatOperator, getVerificationUrl } from "@/lib/utils";
+import { formatCompactNumber, formatUSDC, getMarketTypeLabel, formatOperator, getVerificationUrl } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Target, Calendar, Clock, Loader2, User, ExternalLink } from "lucide-react";
 import Image from "next/image";
 
@@ -44,7 +45,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
 
   const totalYes = pool?.totalYesAmount ?? 0n;
   const totalNo = pool?.totalNoAmount ?? 0n;
-  const odds = calculateOdds(totalYes, totalNo);
   const isOpen = market.status === MarketStatus.Open && market.bettingDeadline > Date.now() / 1000;
   const typeLabel = getMarketTypeLabel(market.endpointPath, market.jsonPath);
 
@@ -53,21 +53,23 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
       {/* Market Header */}
       <div className="border border-[#333] p-6">
         <div className="flex items-center gap-4">
-          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-muted">
-            {profile?.avatarUrl ? (
-              <Image
-                src={profile.avatarUrl}
-                alt={profile.username ?? ""}
-                fill
-                className="object-cover"
-                unoptimized
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center">
-                <User className="h-6 w-6 text-muted-foreground" />
-              </div>
-            )}
-          </div>
+          {!market.endpointPath.includes("tweets/counts/") && (
+            <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-muted">
+              {profile?.avatarUrl ? (
+                <Image
+                  src={profile.avatarUrl}
+                  alt={profile.username ?? ""}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <User className="h-6 w-6 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+          )}
           <div>
             <h1 className="text-xl font-bold tracking-tight">{market.description}</h1>
             <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{typeLabel}</p>
@@ -106,64 +108,78 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
       </div>
 
       <div className="grid lg:grid-cols-5">
-        {/* Left: Market Stats */}
+        {/* Left: Tabbed sections */}
         <div className="lg:col-span-3">
-          <div className="border-x border-b border-[#333] p-6 space-y-4">
-            <h2 className="text-sm font-mono uppercase tracking-widest font-semibold">Market Details</h2>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                  <Target className="h-3 w-3" /> Target
-                </div>
-                <p className="text-lg font-mono font-bold">{formatOperator(market.operator)} {formatCompactNumber(market.targetValue)}</p>
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                  <Clock className="h-3 w-3" /> Deadline
-                </div>
-                <CountdownTimer timestamp={market.bettingDeadline} />
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                  <Calendar className="h-3 w-3" /> Resolution
-                </div>
-                <p className="text-[13px] font-mono">{new Date(market.resolutionDate * 1000).toLocaleDateString()}</p>
-              </div>
-              <div className="space-y-1">
-                <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Total Pool</div>
-                <p className="text-lg font-mono font-bold">${formatUSDC(totalYes + totalNo)}</p>
-              </div>
+          <Tabs defaultValue="details" className="gap-0">
+            <div className="border-x border-b border-[#333] p-6">
+              <TabsList>
+                <TabsTrigger value="details">Details</TabsTrigger>
+                <TabsTrigger value="odds">Odds</TabsTrigger>
+                <TabsTrigger value="activity">Activity</TabsTrigger>
+              </TabsList>
             </div>
 
-            {(() => {
-              const link = getVerificationUrl(market.endpointPath);
-              if (!link) return null;
-              const isTweet = market.endpointPath.includes("tweets/");
-              return (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                    <ExternalLink className="h-3 w-3" /> Source
+            <TabsContent value="details">
+              <div className="border-x border-b border-[#333] p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                      <Target className="h-3 w-3" /> Target
+                    </div>
+                    <p className="text-lg font-mono font-bold">{formatOperator(market.operator)} {formatCompactNumber(market.targetValue)}</p>
                   </div>
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-[13px] font-mono text-foreground underline underline-offset-4 hover:text-muted-foreground transition-colors"
-                  >
-                    {isTweet ? "View Tweet" : link.label}
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                      <Clock className="h-3 w-3" /> Deadline
+                    </div>
+                    <CountdownTimer timestamp={market.bettingDeadline} />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                      <Calendar className="h-3 w-3" /> Resolution
+                    </div>
+                    <p className="text-[13px] font-mono">{new Date(market.resolutionDate * 1000).toLocaleDateString()}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Total Pool</div>
+                    <p className="text-lg font-mono font-bold">${formatUSDC(totalYes + totalNo)}</p>
+                  </div>
                 </div>
-              );
-            })()}
-          </div>
 
-          <div className="border-x border-b border-[#333] p-6 space-y-4">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Current Odds</p>
-            <OddsBar yesPercent={odds.yes} noPercent={odds.no} />
-            <PoolBar totalYes={totalYes} totalNo={totalNo} />
-          </div>
+                {(() => {
+                  const link = getVerificationUrl(market.endpointPath);
+                  if (!link) return null;
+                  const isTweet = market.endpointPath.includes("tweets/") && !market.endpointPath.includes("tweets/counts/");
+                  return (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                        <ExternalLink className="h-3 w-3" /> Source
+                      </div>
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-[13px] font-mono text-foreground underline underline-offset-4 hover:text-muted-foreground transition-colors"
+                      >
+                        {isTweet ? "View Tweet" : link.label}
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  );
+                })()}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="odds">
+              <div className="border-x border-b border-[#333] p-6">
+                <PoolBar totalYes={totalYes} totalNo={totalNo} />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="activity">
+              <BetHistory marketId={marketId} />
+            </TabsContent>
+          </Tabs>
 
           {/* Resolution result */}
           {market.status === MarketStatus.Resolved && resolution && resolution.resolvedAt > 0 && (() => {

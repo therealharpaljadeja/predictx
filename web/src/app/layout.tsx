@@ -5,6 +5,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { Web3Provider } from "@/providers/web3-provider";
 import { Header } from "@/components/layout/header";
+import { TickerTape } from "@/components/layout/ticker-tape";
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
@@ -31,6 +32,7 @@ export default async function RootLayout({
       >
         <Web3Provider cookies={cookies}>
           <Header />
+          <TickerTape />
           <main className="container mx-auto px-4 py-8">
             {children}
           </main>

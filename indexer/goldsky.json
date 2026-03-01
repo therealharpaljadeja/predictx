@@ -1,0 +1,17 @@
+{
+  "version": "1",
+  "name": "predictx-betting-pool",
+  "abis": {
+    "BettingPool": {
+      "path": "./abi.json"
+    }
+  },
+  "instances": [
+    {
+      "abi": "BettingPool",
+      "address": "0xbC793e9B354Bb247fA059e60B82f4C5Fa9E65239",
+      "startBlock": 38162500,
+      "chain": "base-sepolia"
+    }
+  ]
+}

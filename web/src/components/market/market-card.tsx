@@ -10,6 +10,7 @@ import { usePool } from "@/hooks/use-pool";
 import { useProfileImage } from "@/hooks/use-profile-image";
 import { Market, MarketStatus } from "@/types/market";
 import { calculateOdds, formatCompactNumber, formatUSDC, getMarketTypeLabel, formatOperator } from "@/lib/utils";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Target, DollarSign, User } from "lucide-react";
 
 const statusConfig: Record<MarketStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -35,21 +36,23 @@ export function MarketCard({ market }: { market: Market }) {
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted">
-                {profile?.avatarUrl ? (
-                  <Image
-                    src={profile.avatarUrl}
-                    alt={profile.username ?? ""}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <User className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
+              {!market.endpointPath.includes("tweets/counts/") && (
+                <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted">
+                  {profile?.avatarUrl ? (
+                    <Image
+                      src={profile.avatarUrl}
+                      alt={profile.username ?? ""}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <User className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+              )}
               <div>
                 <p className="font-bold text-sm">{market.description}</p>
                 <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{typeLabel}</p>
@@ -62,14 +65,24 @@ export function MarketCard({ market }: { market: Market }) {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center gap-4 text-xs font-mono text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Target className="h-3 w-3" />
-              {formatOperator(market.operator)} {formatCompactNumber(market.targetValue)}
-            </span>
-            <span className="flex items-center gap-1">
-              <DollarSign className="h-3 w-3" />
-              ${formatUSDC(total)}
-            </span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="flex items-center gap-1 cursor-help">
+                  <Target className="h-3 w-3" />
+                  {formatOperator(market.operator)} {formatCompactNumber(market.targetValue)}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>Target value to resolve YES</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="flex items-center gap-1 cursor-help">
+                  <DollarSign className="h-3 w-3" />
+                  ${formatUSDC(total)}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>Total pool (USDC)</TooltipContent>
+            </Tooltip>
           </div>
 
           <OddsBar yesPercent={odds.yes} noPercent={odds.no} />

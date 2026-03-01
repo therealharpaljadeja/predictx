@@ -1,6 +1,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { createAppKit } from "@reown/appkit/react";
 import { baseSepolia } from "@reown/appkit/networks";
 import { cookieToInitialState, WagmiProvider, type Config } from "wagmi";
@@ -32,7 +33,9 @@ export function Web3Provider({ children, cookies }: { children: ReactNode; cooki
   return (
     <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <TooltipProvider>
+          {children}
+        </TooltipProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

@@ -77,7 +77,7 @@ export function UserBetsTable() {
 
   return (
     <Card>
-      <CardContent>
+      <CardContent className="px-0">
         <div className="space-y-0 divide-y divide-border">
           {userBets.map(({ market, position, resolution }, i) => {
             const totalBet = position.yesAmount + position.noAmount;
@@ -118,7 +118,7 @@ export function UserBetsTable() {
               <Link
                 key={market.id}
                 href={`/market/${market.id}`}
-                className="flex items-center justify-between border-border p-3 hover:bg-[#141414] transition-colors duration-150 block animate-card-enter"
+                className="flex items-center justify-between border-border px-6 py-3 hover:bg-[#141414] transition-colors duration-150 block animate-card-enter"
                 style={{ animationDelay: `${i * 50}ms` }}
               >
                 <div className="space-y-1">
