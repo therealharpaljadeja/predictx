@@ -1,7 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 interface USDCAmountInputProps {
   value: string;
@@ -24,6 +26,22 @@ export function USDCAmountInput({ value, onChange, label = "Amount (USDC)", bala
             Bal: {(Number(balance) / 1e6).toFixed(2)}
           </button>
         )}
+      </div>
+      <div className="grid grid-cols-4 gap-px bg-border">
+        {[1, 2, 5, 10].map((amount) => (
+          <Button
+            key={amount}
+            type="button"
+            variant={value === amount.toString() ? "default" : "ghost"}
+            className={cn(
+              "font-mono text-xs uppercase tracking-widest transition-all duration-200 ease-out",
+              value === amount.toString() && "bg-foreground text-background font-bold"
+            )}
+            onClick={() => onChange(amount.toString())}
+          >
+            {amount}
+          </Button>
+        ))}
       </div>
       <Input
         type="number"

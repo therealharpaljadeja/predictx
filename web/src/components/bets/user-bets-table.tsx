@@ -58,7 +58,8 @@ export function UserBetsTable() {
 
       return { market, position: { yesAmount, noAmount, claimed, refunded }, resolution };
     })
-    .filter(Boolean) as Array<{
+    .filter(Boolean)
+    .reverse() as Array<{
     market: (typeof markets)[0];
     position: { yesAmount: bigint; noAmount: bigint; claimed: boolean; refunded: boolean };
     resolution: { targetMet: boolean; resolvedAt: bigint } | null;
@@ -76,9 +77,6 @@ export function UserBetsTable() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-mono uppercase tracking-widest">Your Bets</CardTitle>
-      </CardHeader>
       <CardContent>
         <div className="space-y-0 divide-y divide-border">
           {userBets.map(({ market, position, resolution }, i) => {

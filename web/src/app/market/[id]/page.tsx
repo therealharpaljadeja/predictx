@@ -2,9 +2,7 @@
 
 import { use } from "react";
 import { useAccount } from "wagmi";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { BetPanel } from "@/components/market/bet-panel";
 import { PoolBar } from "@/components/market/pool-bar";
 import { CountdownTimer } from "@/components/market/countdown-timer";
@@ -51,9 +49,9 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const typeLabel = getMarketTypeLabel(market.endpointPath, market.jsonPath);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-4xl">
       {/* Market Header */}
-      <div className="space-y-2">
+      <div className="border border-[#333] p-6">
         <div className="flex items-center gap-4">
           <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-muted">
             {profile?.avatarUrl ? (
@@ -90,155 +88,147 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
       </div>
 
       {market.status !== MarketStatus.Resolved && market.status !== MarketStatus.Cancelled && (
-        <MarketCountdown
-          timestamp={market.resolutionDate}
-          label="Market resolves in"
-        />
+        <div className="border-x border-b border-[#333] py-6">
+          <MarketCountdown
+            timestamp={market.resolutionDate}
+            label="Market resolves in"
+          />
+        </div>
       )}
 
-      {/* Chart — full width at top */}
-      <MetricChart
-        marketId={marketId}
-        targetValue={market.targetValue}
-        metricLabel={typeLabel}
-      />
+      {/* Chart — full width */}
+      <div className="border-x border-b border-[#333]">
+        <MetricChart
+          marketId={marketId}
+          targetValue={market.targetValue}
+          metricLabel={typeLabel}
+        />
+      </div>
 
-      <div className="grid gap-6 lg:grid-cols-5">
+      <div className="grid lg:grid-cols-5">
         {/* Left: Market Stats */}
-        <div className="lg:col-span-3 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-mono uppercase tracking-widest">Market Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                    <Target className="h-3 w-3" /> Target
-                  </div>
-                  <p className="text-lg font-mono font-bold">{formatOperator(market.operator)} {formatCompactNumber(market.targetValue)}</p>
+        <div className="lg:col-span-3">
+          <div className="border-x border-b border-[#333] p-6 space-y-4">
+            <h2 className="text-sm font-mono uppercase tracking-widest font-semibold">Market Details</h2>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                  <Target className="h-3 w-3" /> Target
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                    <Clock className="h-3 w-3" /> Deadline
-                  </div>
-                  <CountdownTimer timestamp={market.bettingDeadline} />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                    <Calendar className="h-3 w-3" /> Resolution
-                  </div>
-                  <p className="text-[13px] font-mono">{new Date(market.resolutionDate * 1000).toLocaleDateString()}</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Total Pool</div>
-                  <p className="text-lg font-mono font-bold">${formatUSDC(totalYes + totalNo)}</p>
-                </div>
+                <p className="text-lg font-mono font-bold">{formatOperator(market.operator)} {formatCompactNumber(market.targetValue)}</p>
               </div>
-
-              {(() => {
-                const link = getVerificationUrl(market.endpointPath);
-                if (!link) return null;
-                const isTweet = market.endpointPath.includes("tweets/");
-                return (
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                      <ExternalLink className="h-3 w-3" /> Source
-                    </div>
-                    <a
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-[13px] font-mono text-foreground underline underline-offset-4 hover:text-muted-foreground transition-colors"
-                    >
-                      {isTweet ? "View Tweet" : link.label}
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </div>
-                );
-              })()}
-
-              <Separator />
-
-              <div className="space-y-2">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Current Odds</p>
-                <OddsBar yesPercent={odds.yes} noPercent={odds.no} />
+              <div className="space-y-1">
+                <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                  <Clock className="h-3 w-3" /> Deadline
+                </div>
+                <CountdownTimer timestamp={market.bettingDeadline} />
               </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                  <Calendar className="h-3 w-3" /> Resolution
+                </div>
+                <p className="text-[13px] font-mono">{new Date(market.resolutionDate * 1000).toLocaleDateString()}</p>
+              </div>
+              <div className="space-y-1">
+                <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Total Pool</div>
+                <p className="text-lg font-mono font-bold">${formatUSDC(totalYes + totalNo)}</p>
+              </div>
+            </div>
 
-              <PoolBar totalYes={totalYes} totalNo={totalNo} />
-            </CardContent>
-          </Card>
+            {(() => {
+              const link = getVerificationUrl(market.endpointPath);
+              if (!link) return null;
+              const isTweet = market.endpointPath.includes("tweets/");
+              return (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                    <ExternalLink className="h-3 w-3" /> Source
+                  </div>
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-[13px] font-mono text-foreground underline underline-offset-4 hover:text-muted-foreground transition-colors"
+                  >
+                    {isTweet ? "View Tweet" : link.label}
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              );
+            })()}
+          </div>
+
+          <div className="border-x border-b border-[#333] p-6 space-y-4">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Current Odds</p>
+            <OddsBar yesPercent={odds.yes} noPercent={odds.no} />
+            <PoolBar totalYes={totalYes} totalNo={totalNo} />
+          </div>
 
           {/* Resolution result */}
           {market.status === MarketStatus.Resolved && resolution && resolution.resolvedAt > 0 && (() => {
             const verification = getVerificationUrl(market.endpointPath);
             return (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm font-mono uppercase tracking-widest">Resolution</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex justify-between text-[13px] font-mono">
-                    <span className="text-muted-foreground">Actual Value</span>
-                    <span className="font-bold">{formatCompactNumber(resolution.actualValue)}</span>
-                  </div>
+              <div className="border-x border-b border-[#333] p-6 space-y-3">
+                <h2 className="text-sm font-mono uppercase tracking-widest font-semibold">Resolution</h2>
+                <div className="flex justify-between text-[13px] font-mono">
+                  <span className="text-muted-foreground">Actual Value</span>
+                  <span className="font-bold">{formatCompactNumber(resolution.actualValue)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[13px] font-mono text-muted-foreground">Target Met?</span>
+                  <Badge variant={resolution.targetMet ? "default" : "secondary"}>
+                    {resolution.targetMet ? "YES" : "NO"}
+                  </Badge>
+                </div>
+                {verification && (
                   <div className="flex justify-between items-center">
-                    <span className="text-[13px] font-mono text-muted-foreground">Target Met?</span>
-                    <Badge variant={resolution.targetMet ? "default" : "secondary"}>
-                      {resolution.targetMet ? "YES" : "NO"}
-                    </Badge>
+                    <span className="text-[13px] font-mono text-muted-foreground">Verify</span>
+                    <a
+                      href={verification.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-[13px] font-mono text-foreground underline underline-offset-4 hover:text-muted-foreground transition-colors"
+                    >
+                      {verification.label}
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
                   </div>
-                  {verification && (
-                    <div className="flex justify-between items-center pt-1">
-                      <span className="text-[13px] font-mono text-muted-foreground">Verify</span>
-                      <a
-                        href={verification.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 text-[13px] font-mono text-foreground underline underline-offset-4 hover:text-muted-foreground transition-colors"
-                      >
-                        {verification.label}
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                )}
+              </div>
             );
           })()}
         </div>
 
         {/* Right: Bet Panel / Claim + User Position */}
-        <div className="lg:col-span-2 space-y-6">
-          {(market.status === MarketStatus.Resolved || market.status === MarketStatus.Cancelled) ? (
-            <ClaimWinnings marketId={marketId} status={market.status} />
-          ) : (
-            <BetPanel marketId={marketId} isOpen={isOpen} />
-          )}
+        <div className="lg:col-span-2">
+          <div className="border-r border-b border-[#333] lg:border-l-0 border-l">
+            {(market.status === MarketStatus.Resolved || market.status === MarketStatus.Cancelled) ? (
+              <ClaimWinnings marketId={marketId} status={market.status} />
+            ) : (
+              <BetPanel marketId={marketId} isOpen={isOpen} />
+            )}
+          </div>
 
           {/* User position */}
           {position && (position.yesAmount > 0n || position.noAmount > 0n) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-mono uppercase tracking-widest">Your Position</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-6">
-                  {position.yesAmount > 0n && (
-                    <div>
-                      <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">YES</p>
-                      <p className="text-lg font-mono font-bold">${formatUSDC(position.yesAmount)}</p>
-                    </div>
-                  )}
-                  {position.noAmount > 0n && (
-                    <div>
-                      <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">NO</p>
-                      <p className="text-lg font-mono font-bold text-muted-foreground">${formatUSDC(position.noAmount)}</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <div className="border-r border-b border-[#333] lg:border-l-0 border-l p-6 space-y-3">
+              <h2 className="text-sm font-mono uppercase tracking-widest font-semibold">Your Position</h2>
+              <div className="flex gap-6">
+                {position.yesAmount > 0n && (
+                  <div>
+                    <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">YES</p>
+                    <p className="text-lg font-mono font-bold">${formatUSDC(position.yesAmount)}</p>
+                  </div>
+                )}
+                {position.noAmount > 0n && (
+                  <div>
+                    <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">NO</p>
+                    <p className="text-lg font-mono font-bold text-muted-foreground">${formatUSDC(position.noAmount)}</p>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </div>
       </div>

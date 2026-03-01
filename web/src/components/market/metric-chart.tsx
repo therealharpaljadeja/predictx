@@ -11,7 +11,6 @@ import {
 } from "recharts";
 import { useMarketStats } from "@/hooks/use-market-stats";
 import { formatCompactNumber } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function formatAxisValue(n: number): string {
   if (n >= 1_000_000) {
@@ -63,19 +62,16 @@ export function MetricChart({ marketId, targetValue, metricLabel }: MetricChartP
   const yMax = Math.max(dataMax, target) * 1.05;
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-mono uppercase tracking-widest">
-            {metricLabel} Progression
-          </CardTitle>
-          <span className="text-xs font-mono text-muted-foreground">
-            {formatCompactNumber(latest)} / {formatCompactNumber(target)} ({progressPct}%)
-          </span>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[200px] w-full">
+    <div className="p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-mono uppercase tracking-widest font-semibold">
+          {metricLabel} Progression
+        </h2>
+        <span className="text-xs font-mono text-muted-foreground">
+          {formatCompactNumber(latest)} / {formatCompactNumber(target)} ({progressPct}%)
+        </span>
+      </div>
+      <div className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={snapshots} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
               <XAxis
@@ -119,7 +115,6 @@ export function MetricChart({ marketId, targetValue, metricLabel }: MetricChartP
             </LineChart>
           </ResponsiveContainer>
         </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 }
