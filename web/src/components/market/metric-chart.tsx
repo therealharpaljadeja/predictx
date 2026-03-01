@@ -54,8 +54,6 @@ export function MetricChart({ marketId, targetValue, metricLabel }: MetricChartP
 
   const target = Number(targetValue);
   const latest = snapshots[snapshots.length - 1].value;
-  const progressPct = target > 0 ? ((latest / target) * 100).toFixed(1) : "—";
-
   const dataMin = Math.min(...snapshots.map((s) => s.value));
   const dataMax = Math.max(...snapshots.map((s) => s.value));
   const yMin = Math.min(dataMin, target) * 0.95;
@@ -70,7 +68,6 @@ export function MetricChart({ marketId, targetValue, metricLabel }: MetricChartP
         <div className="text-right font-mono">
           <span className="text-lg font-bold text-foreground">{formatCompactNumber(latest)}</span>
           <span className="text-sm text-muted-foreground"> / {formatCompactNumber(target)}</span>
-          <span className="ml-2 text-sm font-bold text-foreground">{progressPct}%</span>
         </div>
       </div>
       <div className="h-[200px] w-full">
