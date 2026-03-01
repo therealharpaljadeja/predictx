@@ -120,7 +120,7 @@ export RESOLUTION=<MarketResolution address>
 export USDC=0x036CbD53842c5426634e7929541eC2318f3dCF7e
 ```
 
-### Create a Market
+### Create a Market (owner only)
 
 ```bash
 # Will @elonmusk reach 200M followers? (7-day betting window, 14-day resolution)
