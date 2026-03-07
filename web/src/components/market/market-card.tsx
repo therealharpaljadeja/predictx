@@ -9,7 +9,7 @@ import { CountdownTimer } from "./countdown-timer";
 import { usePool } from "@/hooks/use-pool";
 import { useProfileImage } from "@/hooks/use-profile-image";
 import { Market, MarketStatus } from "@/types/market";
-import { calculateOdds, formatCompactNumber, formatUSDC, getMarketTypeLabel, formatOperator } from "@/lib/utils";
+import { calculateOdds, formatCompactNumber, formatUSDC, formatOperator } from "@/lib/utils";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Target, DollarSign, User } from "lucide-react";
 
