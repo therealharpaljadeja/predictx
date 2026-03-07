@@ -5,6 +5,11 @@
     "dev": "pnpm --filter web dev",
     "build": "pnpm --filter web build",
     "test:contracts": "cd contracts && forge test",
-    "deploy:contracts": "cd contracts && forge script script/Deploy.s.sol --rpc-url base_sepolia --broadcast"
+    "deploy:contracts": "cd contracts && forge script script/Deploy.s.sol --rpc-url base_sepolia --broadcast",
+    "simulate": "npx tsx scripts/simulate-activity.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "viem": "^2.46.3"
   }
 }

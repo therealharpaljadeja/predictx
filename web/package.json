@@ -33,6 +33,7 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@reown/appkit",
       "esbuild"
     ]
   },

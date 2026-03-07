@@ -45,7 +45,7 @@ export function MarketManagement() {
       </CardHeader>
       <CardContent>
         <div className="space-y-0 divide-y divide-border">
-          {markets.map((market) => (
+          {[...markets].sort((a, b) => b.id - a.id).map((market) => (
             <div
               key={market.id}
               className="flex items-center justify-between p-3"

@@ -55,7 +55,10 @@ export function getMarketTypeLabel(endpointPath: string, jsonPath: string): stri
   const match = MARKET_TYPES.find(
     (t) => jsonPath === t.jsonPath
   );
-  return match?.label ?? "Unknown";
+  if (!match) return "Unknown";
+
+  const verification = getVerificationUrl(endpointPath);
+  return verification ? `${match.label} — ${verification.label}` : match.label;
 }
 
 export function getVerificationUrl(endpointPath: string): { url: string; label: string } | null {
