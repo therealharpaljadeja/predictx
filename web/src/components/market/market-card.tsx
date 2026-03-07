@@ -28,7 +28,6 @@ export function MarketCard({ market }: { market: Market }) {
   const odds = calculateOdds(totalYes, totalNo);
   const total = totalYes + totalNo;
   const config = statusConfig[market.status];
-  const typeLabel = getMarketTypeLabel(market.endpointPath, market.jsonPath);
 
   return (
     <Link href={`/market/${market.id}`}>
@@ -55,7 +54,6 @@ export function MarketCard({ market }: { market: Market }) {
               )}
               <div>
                 <p className="font-bold text-sm">{market.description}</p>
-                <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{typeLabel}</p>
               </div>
             </div>
             <Badge variant={config.variant} className={`shrink-0 ${config.label === "LIVE" ? "animate-status-pulse" : ""}`}>

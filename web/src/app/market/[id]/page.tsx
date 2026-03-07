@@ -228,7 +228,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
 
           {/* User position */}
           {position && (position.yesAmount > 0n || position.noAmount > 0n) && (
-            <div className="border-r border-b border-[#333] lg:border-l-0 border-l p-6 space-y-3">
+            <div className="border-r border-b border-l border-[#333] p-6 space-y-3">
               <h2 className="text-sm font-mono uppercase tracking-widest font-semibold">Your Position</h2>
               <div className="flex gap-6">
                 {position.yesAmount > 0n && (
